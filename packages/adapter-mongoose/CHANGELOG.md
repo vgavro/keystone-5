@@ -1,5 +1,14 @@
 # @keystone-alpha/adapter-mongoose
 
+## 6.0.1
+
+### Patch Changes
+
+- [`768420f5`](https://github.com/keystonejs/keystone-5/commit/768420f567c244d57a4e2a3aaafe628ea9813d9d) [#1781](https://github.com/keystonejs/keystone-5/pull/1781) Thanks [@simonswiss](https://github.com/simonswiss)! - changing require path to "@keystone-alpha" instead of "@keystonejs"
+
+- Updated dependencies [[`a48281ba`](https://github.com/keystonejs/keystone-5/commit/a48281ba605bf5bebc89fcbb36d3e69c17182eec)]:
+  - @keystone-alpha/keystone@16.1.0
+
 ## 6.0.0
 
 ### Major Changes

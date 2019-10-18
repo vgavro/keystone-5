@@ -1,5 +1,11 @@
 # @keystone-alpha/keystone
 
+## 16.1.0
+
+### Minor Changes
+
+- [`a48281ba`](https://github.com/keystonejs/keystone-5/commit/a48281ba605bf5bebc89fcbb36d3e69c17182eec) [#1783](https://github.com/keystonejs/keystone-5/pull/1783) Thanks [@timleslie](https://github.com/timleslie)! - The `keystone` cli now accepts a return of `{ keystone, apps, configureExpress }` from the entry file. `configureExpress` will be called on the Express app before applying the keystone middlewares.
+
 ## 16.0.1
 
 ### Patch Changes
