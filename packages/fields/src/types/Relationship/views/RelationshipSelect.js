@@ -1,25 +1,11 @@
-// @flow
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
-import * as React from 'react';
-import { Query } from 'react-apollo';
+import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import Select from '@arch-ui/select';
 import { components } from 'react-select';
 import 'intersection-observer';
 import { useState, useMemo, useRef, useEffect, forwardRef } from 'react';
-
-type Props = {
-  innerRef?: React.Ref<*>,
-  autoFocus?: boolean,
-  field: Object,
-  errors?: Array<Error>,
-  renderContext: string | null,
-  htmlID: string,
-  onChange: Function,
-  value: *,
-  isMulti: boolean,
-};
 
 function useIntersectionObserver(cb, ref) {
   useEffect(() => {
@@ -164,7 +150,7 @@ const RelationshipSelect = ({
   onChange,
   isMulti,
   value,
-}: Props) => {
+}) => {
   const [search, setSearch] = useState('');
   const refList = field.getRefList();
   const query = gql`query RelationshipSelect($search: String!, $skip: Int!) {${refList.buildQuery(
@@ -177,39 +163,39 @@ const RelationshipSelect = ({
     serverErrors.every(error => !(error instanceof Error && error.name === 'AccessDeniedError'));
   const selectProps = renderContext === 'dialog' ? { menuShouldBlockScroll: true } : null;
 
-  return (
-    <Query query={query} variables={{ search, skip: 0 }}>
-      {({ data, error, loading, fetchMore }) => {
-        // TODO: better error UI
-        // TODO: Handle permission errors
-        // (ie; user has permission to read this relationship field, but
-        // not the related list, or some items on the list)
-        if (error) console.log('ERROR!!!', error);
-        if (error) return 'Error';
+  const { data, error, loading, fetchMore } = useQuery(query, {
+    variables: { search, skip: 0 },
+  });
 
-        return (
-          <Relationship
-            {...{
-              data,
-              loading,
-              value,
-              refList,
-              canRead,
-              isMulti,
-              search,
-              autoFocus,
-              serverErrors,
-              onChange,
-              htmlID,
-              setSearch,
-              selectProps,
-              fetchMore,
-              ref: innerRef,
-            }}
-          />
-        );
+  // TODO: better error UI
+  // TODO: Handle permission errors
+  // (ie; user has permission to read this relationship field, but
+  // not the related list, or some items on the list)
+  if (error) {
+    console.log('ERROR!!!', error);
+    return 'Error';
+  }
+
+  return (
+    <Relationship
+      {...{
+        data,
+        loading,
+        value,
+        refList,
+        canRead,
+        isMulti,
+        search,
+        autoFocus,
+        serverErrors,
+        onChange,
+        htmlID,
+        setSearch,
+        selectProps,
+        fetchMore,
+        ref: innerRef,
       }}
-    </Query>
+    />
   );
 };
 

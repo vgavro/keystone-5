@@ -2,7 +2,7 @@
 
 import { jsx } from '@emotion/core';
 import { Component, Fragment, useState } from 'react';
-import { Query } from 'react-apollo';
+import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
 import { FieldContainer, FieldLabel, FieldInput } from '@arch-ui/fields';
@@ -11,55 +11,47 @@ import { gridSize } from '@arch-ui/theme';
 import { IconButton } from '@arch-ui/button';
 import Tooltip from '@arch-ui/tooltip';
 
-import CreateItemModal from './CreateItemModal';
 import RelationshipSelect from './RelationshipSelect';
 
 const MAX_IDS_IN_FILTER = 100;
 
 function SetAsCurrentUser({ listKey, value, onAddUser, many }) {
-  let path = 'authenticated' + listKey;
-  return (
-    <Query
-      query={gql`
-        query User {
-          ${path} {
-            _label_
-            id
-          }
-        }
-      `}
-    >
-      {({ data }) => {
-        if (data && data[path]) {
-          let userId = data[path].id;
-          if (
-            value !== null &&
-            (many ? value.some(item => item.id === userId) : value.id === userId)
-          ) {
-            return null;
-          }
-          let label = `${many ? 'Add' : 'Set as'} ${data[path]._label_}`;
-          return (
-            <Tooltip placement="top" content={label}>
-              {ref => (
-                <IconButton
-                  css={{ marginLeft: gridSize }}
-                  variant="ghost"
-                  ref={ref}
-                  onClick={() => {
-                    onAddUser(data[path]);
-                  }}
-                  icon={PersonIcon}
-                  aria-label={label}
-                />
-              )}
-            </Tooltip>
-          );
-        }
-        return null;
-      }}
-    </Query>
-  );
+  const path = 'authenticated' + listKey;
+
+  const { data } = useQuery(gql`
+    query User {
+      ${path} {
+        _label_
+        id
+      }
+    }
+  `);
+
+  if (data && data[path]) {
+    const userId = data[path].id;
+    if (value !== null && (many ? value.some(item => item.id === userId) : value.id === userId)) {
+      return null;
+    }
+    const label = `${many ? 'Add' : 'Set as'} ${data[path]._label_}`;
+    return (
+      <Tooltip placement="top" content={label}>
+        {ref => (
+          <IconButton
+            css={{ marginLeft: gridSize }}
+            variant="ghost"
+            ref={ref}
+            onClick={() => {
+              onAddUser(data[path]);
+            }}
+            icon={PersonIcon}
+            aria-label={label}
+          />
+        )}
+      </Tooltip>
+    );
+  }
+
+  return null;
 }
 
 function LinkToRelatedItems({ field, value }) {
@@ -110,7 +102,7 @@ function LinkToRelatedItems({ field, value }) {
   );
 }
 
-function CreateAndAddItem({ field, item, list, onCreate }) {
+function CreateAndAddItem({ field, item, list, onCreate, CreateItemModal }) {
   let relatedList = field.adminMeta.getListByKey(field.config.ref);
   let [isOpen, setIsOpen] = useState(false);
   let label = `Create and add ${relatedList.singular}`;
@@ -183,7 +175,17 @@ export default class RelationshipField extends Component {
     }
   };
   render() {
-    const { autoFocus, field, value, renderContext, errors, onChange, item, list } = this.props;
+    const {
+      autoFocus,
+      field,
+      value,
+      renderContext,
+      errors,
+      onChange,
+      item,
+      list,
+      CreateItemModal,
+    } = this.props;
     const { many, ref } = field.config;
     const { authStrategy } = field.adminMeta;
     const htmlID = `ks-input-${field.path}`;
@@ -210,6 +212,7 @@ export default class RelationshipField extends Component {
             field={field}
             item={item}
             list={list}
+            CreateItemModal={CreateItemModal}
           />
           {authStrategy && ref === authStrategy.listKey && (
             <SetAsCurrentUser
